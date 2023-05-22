@@ -26,7 +26,7 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
     @Suppress("SpellCheckingInspection")
     sealed class Node {
         enum class OpSealed {
-            eq, and, or, not, bvnot, bvult, bvule, bvshl, bvshr, bvadd, bvand, bvmul,
+            eq, and, or, not, bvnot, bvult, bvule, bvshl, bvlshr, bvadd, bvand, bvmul,
             bvudiv, bvurem, concat, extract
         }
 
@@ -84,7 +84,7 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                     when (ast.node.op) {
                         Node.OpSealed.bvnot -> eval(ast.lhs!!).inv()
                         Node.OpSealed.bvshl -> eval(ast.lhs!!) shl eval(ast.rhs!!).toInt()
-                        Node.OpSealed.bvshr -> eval(ast.lhs!!) shr eval(ast.rhs!!).toInt()
+                        Node.OpSealed.bvlshr -> eval(ast.lhs!!) shr eval(ast.rhs!!).toInt()
                         Node.OpSealed.bvadd -> eval(ast.lhs!!) + eval(ast.rhs!!)
                         Node.OpSealed.bvand -> eval(ast.lhs!!) and eval(ast.rhs!!)
                         Node.OpSealed.bvmul -> eval(ast.lhs!!) * eval(ast.rhs!!)
@@ -425,7 +425,7 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                             }
                         }
 
-                        Node.OpSealed.bvshr -> {
+                        Node.OpSealed.bvlshr -> {
                             var cnt = 0
                             while (value and ((1u shl 31) shr cnt) == 0u) cnt++
                             if (cur.lhs!! == other!!) {
@@ -551,6 +551,11 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
             var value: UInt? = 1u
             while (true) {
                 if (cur.node is Node.BvVar) return Pair((cur.node as Node.BvVar).v, value!!)
+                if (cur.node is Node.Op && (cur.node as Node.Op).op == Node.OpSealed.not) {
+                    cur = cur.lhs!!
+                    value = 0u
+                    continue
+                }
 
                 // conflict
                 if (!hasNonCostInput(cur)) return selectSlsMove(root)
