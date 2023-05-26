@@ -5,19 +5,26 @@ import org.ksmt.solver.KSolverStatus
 import org.ksmt.solver.z3.KZ3SMTLibParser
 import sls.solver.SLSLover
 import java.io.File
+import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
 
 fun main() {
     val ctx = KContext()
     var totalTime: Long = 0
 
-    File("C:\\Users\\Marat\\Desktop\\smt\\sls\\app\\src\\main\\kotlin\\sls\\bench_ab").walkTopDown().drop(1).forEach {
-        totalTime += test(ctx, it.readText())
-    }
+//    File("C:\\Users\\Marat\\Desktop\\smt\\sls\\app\\src\\main\\kotlin\\sls\\bench_ab").walkTopDown().drop(1).forEach {
+//        totalTime += test(ctx, it.readText())
+//    }
+
+    val sudokuFormula = File("C:\\Users\\Marat\\Desktop\\smt\\sudoku9x9_1.smt2").readText().trimIndent()
+    val n = 10
+    for (i in 0 until n)
+        totalTime += test(ctx, sudokuFormula)
     println("It took $totalTime ms")
+    println("It took ${totalTime / n} ms average")
 }
 
-private fun test(ctx: KContext, formula: String) : Long =
+private fun test(ctx: KContext, formula: String): Long =
     with(ctx) {
         // create symbolic variables
 //        val a1 by boolSort
@@ -55,7 +62,7 @@ private fun test(ctx: KContext, formula: String) : Long =
 //                    println("$variable = $value")
 //                }
             }
-//            println("It took $timeInMillis ms to find a solution")
+            println("It took $timeInMillis ms to find a solution")
         }
         return@with timeInMillis
     }

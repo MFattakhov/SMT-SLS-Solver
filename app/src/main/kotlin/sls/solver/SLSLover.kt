@@ -21,7 +21,7 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
     private var allBoolVariables: HashSet<String> = hashSetOf()
     private var variablesMap: HashMap<AST, HashSet<String>> = hashMapOf()
     private var affectedConstraints: HashMap<String, HashSet<AST>> = hashMapOf()
-    public var model: HashMap<String, UInt> = hashMapOf()
+    var model: HashMap<String, UInt> = hashMapOf()
 
     @Suppress("SpellCheckingInspection")
     sealed class Node {
@@ -323,12 +323,8 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                 is Node.Op -> {
                     return when (cur.node.op) {
                         Node.OpSealed.eq -> {
-                            if (value == 1u) evaluatedOther
-                            else {
-                                var random: UInt = Random.nextUInt()
-                                while (random != evaluatedOther) random = Random.nextUInt()
-                                random
-                            }
+                            if (value == 1u) evaluatedOther!!
+                            else evaluatedOther!! + 1u
                         }
 
                         Node.OpSealed.bvnot -> {
@@ -338,39 +334,21 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                         Node.OpSealed.bvult -> {
                             if (cur.lhs!! == other!!) {
                                 if (value == 1u && evaluatedOther!! < uIntMax) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random <= evaluatedOther)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther + 1u
                                 } else if (value == 0u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random > evaluatedOther!!)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther!!
                                 } else if (other.node !is Node.BvConst) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random == 0u)
-                                        random = Random.nextUInt()
-                                    random
+                                    Random.nextUInt() + 1u
                                 } else {
                                     null
                                 }
                             } else {
                                 if (value == 1u && evaluatedOther!! != 0u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random >= evaluatedOther)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther - 1u
                                 } else if (value == 0u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random < evaluatedOther!!)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther!!
                                 } else if (other.node !is Node.BvConst) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random == uIntMax)
-                                        random = Random.nextUInt()
-                                    random
+                                    Random.nextUInt() - 1u
                                 } else {
                                     null
                                 }
@@ -380,15 +358,9 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                         Node.OpSealed.bvule -> {
                             if (cur.lhs!! == other!!) {
                                 if (value == 1u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random < evaluatedOther!!)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther!!
                                 } else if (value == 0u && evaluatedOther!! != 0u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random >= evaluatedOther)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther - 1u
                                 } else if (other.node !is Node.BvConst) {
                                     Random.nextUInt()
                                 } else {
@@ -396,15 +368,9 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                                 }
                             } else {
                                 if (value == 1u) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random > evaluatedOther!!)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther!!
                                 } else if (value == 0u && evaluatedOther!! < uIntMax) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random <= evaluatedOther)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther + 1u
                                 } else if (other.node !is Node.BvConst) {
                                     Random.nextUInt()
                                 } else {
@@ -501,20 +467,14 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
                         Node.OpSealed.bvurem -> {
                             if (cur.lhs!! == other!!) {
                                 if (evaluatedOther!! == value && evaluatedOther != uIntMax) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random <= evaluatedOther)
-                                        random = Random.nextUInt()
-                                    random
+                                    evaluatedOther + 1u
                                 } else if (evaluatedOther > value && evaluatedOther - value > value) {
                                     evaluatedOther - value
                                 } else if (other.node !is Node.BvConst &&
                                     ((evaluatedOther > value && evaluatedOther - value <= value) ||
                                             (evaluatedOther < value && value < uIntMax))
                                 ) {
-                                    var random: UInt = Random.nextUInt()
-                                    while (random <= value)
-                                        random = Random.nextUInt()
-                                    random
+                                    value + 1u
                                 } else {
                                     null
                                 }
