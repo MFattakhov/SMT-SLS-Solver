@@ -812,7 +812,9 @@ open class SLSLover(private val ctx: KContext) : KSolver<SLSSolverConfiguration>
 
     override fun assert(expr: KExpr<KBoolSort>) {
         ctx.ensureContextMatch(expr)
-        formula.add(makeAST(expr.toString()))
+        val str: String = expr.toString()
+        if (str == "true") return
+        formula.add(makeAST(str))
         collectVariables(formula.last())
     }
 
